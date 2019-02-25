@@ -1,8 +1,7 @@
-FROM java:7
-MAINTAINER Mike Graves <mgraves@mit.edu>
+FROM openjdk:8
 
-ENV JAVA_HOME /usr/lib/jvm/java-7-openjdk-amd64
-ENV GEOSERVER_VERSION 2.8.4
+ENV GEOSERVER_VERSION 2.14.2
+ENV GEOSERVER_VERSION_MM 2.14
 ENV GEOSERVER_HOME /usr/local/geoserver
 ENV GEOSERVER_DATA_DIR /var/geoserver/data
 
@@ -15,10 +14,9 @@ RUN cd /tmp && \
     mv geoserver-${GEOSERVER_VERSION}/* ${GEOSERVER_HOME}
 
 RUN mv ${GEOSERVER_HOME}/data_dir ${GEOSERVER_DATA_DIR}
-
 RUN cd /tmp && \
-    curl -L -O http://sourceforge.net/projects/geoserver/files/GeoServer/${GEOSERVER_VERSION}/extensions/geoserver-${GEOSERVER_VERSION}-importer-plugin.zip && \
-    unzip -o -d ${GEOSERVER_HOME}/webapps/geoserver/WEB-INF/lib/ geoserver-${GEOSERVER_VERSION}-importer-plugin.zip
+    curl -OL https://build.geoserver.org/geoserver/${GEOSERVER_VERSION_MM}.x/community-latest/geoserver-${GEOSERVER_VERSION_MM}-SNAPSHOT-s3-geotiff-plugin.zip && \
+    unzip -o -d ${GEOSERVER_HOME}/webapps/geoserver/WEB-INF/lib/ geoserver-${GEOSERVER_VERSION_MM}-SNAPSHOT-s3-geotiff-plugin.zip
 
 VOLUME ["${GEOSERVER_DATA_DIR}"]
 
