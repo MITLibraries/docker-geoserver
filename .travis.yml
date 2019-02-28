@@ -1,0 +1,12 @@
+notifications:
+  email: false
+language: minimal
+install: pip install --user awscli
+script: make dist
+jobs:
+  include:
+    - stage: deploy
+      before_deploy: make dist
+      deploy:
+        provider: script
+        script: make publish
