@@ -19,6 +19,12 @@ RUN cd /tmp && \
     curl -OL https://build.geoserver.org/geoserver/${GEOSERVER_VERSION_MM}.x/community-latest/geoserver-${GEOSERVER_VERSION_MM}-SNAPSHOT-s3-geotiff-plugin.zip && \
     unzip -o -d ${GEOSERVER_HOME}/webapps/geoserver/WEB-INF/lib/ geoserver-${GEOSERVER_VERSION_MM}-SNAPSHOT-s3-geotiff-plugin.zip
 
+RUN rm -rf ${GEOSERVER_DATA_DIR}/coverages/* \
+           ${GEOSERVER_DATA_DIR}/data/* \
+           ${GEOSERVER_DATA_DIR}/demo \
+           ${GEOSERVER_DATA_DIR}/layergroups/* \
+           ${GEOSERVER_DATA_DIR}/workspaces \
+           ${GEOSERVER_DATA_DIR}/www
 COPY data ${GEOSERVER_DATA_DIR}
 COPY entrypoint.sh /usr/local/bin/
 
