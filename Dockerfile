@@ -30,7 +30,12 @@ COPY entrypoint.sh /usr/local/bin/
 
 VOLUME ["${GEOSERVER_DATA_DIR}"]
 
+ENV GEOSERVER_USER admin
 ENV GEOSERVER_PASSWORD geoserver
+ENV MINIO_URL http://minio:9000/
+ENV MINIO_ALIAS minio
+ENV MINIO_USER minio
+ENV MINIO_PASSWORD miniopass
 
 EXPOSE 8080
 ENTRYPOINT ["entrypoint.sh"]
