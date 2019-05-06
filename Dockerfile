@@ -23,7 +23,7 @@ RUN rm -rf ${GEOSERVER_DATA_DIR}/coverages/* \
            ${GEOSERVER_DATA_DIR}/data/* \
            ${GEOSERVER_DATA_DIR}/demo \
            ${GEOSERVER_DATA_DIR}/layergroups/* \
-           ${GEOSERVER_DATA_DIR}/workspaces \
+           ${GEOSERVER_DATA_DIR}/workspaces/* \
            ${GEOSERVER_DATA_DIR}/www
 COPY data ${GEOSERVER_DATA_DIR}
 COPY entrypoint.sh /usr/local/bin/
