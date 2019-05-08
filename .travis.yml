@@ -1,7 +1,7 @@
-notifications:
-  email: false
-language: minimal
-install: pip install --user awscli
+dist: xenial
+language: python
+python: 3.7
+install: pip install awscli
 script: make dist
 jobs:
   include:
