@@ -19,7 +19,7 @@ RUN curl -OL https://sourceforge.net/projects/geoserver/files/GeoServer/${GEOSER
 RUN curl -OL https://build.geoserver.org/geoserver/${GEOSERVER_VERSION_MM}.x/community-latest/geoserver-${GEOSERVER_VERSION_MM}-SNAPSHOT-s3-geotiff-plugin.zip && \
     unzip -o -d ${GEOSERVER_HOME}/webapps/geoserver/WEB-INF/lib/ geoserver-${GEOSERVER_VERSION_MM}-SNAPSHOT-s3-geotiff-plugin.zip
 RUN cd ${GEOSERVER_HOME}/data_dir/ && \
-    rm -rf coverages/* data/* demo layergroups/* workspaces www
+    rm -rf coverages/* data/* demo layergroups/* workspaces www security/geoserver.jceks
 COPY data ${GEOSERVER_HOME}/data_dir/
 
 
