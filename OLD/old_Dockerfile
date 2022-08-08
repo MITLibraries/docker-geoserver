@@ -1,31 +1,28 @@
+# Base image used for both building and running
+# Based on github.com/geoserver/docker
 FROM ubuntu:22.04
 
-# Based on github.com/geoserver/docker, but for now, we cannot use that image
-# because
-# 1. there are too many typos in the ARG and ENV statements (related to trialing slashes)
-# 2. there is an issue with the S3 GeoTIFF module in GeoServer > 2.18
-# When those issues are resolved, we can replace the first line above with the line below
-# FROM docker.osgeo.org/geoserver:2.21.1
-
-# Local values for building the container
+# The GS_VERSION argument could be used like this to overwrite the default:
+# docker build --build-arg GS_VERSION=2.11.3 -t geoserver:2.11.3 .
 ARG TOMCAT_VERSION=9.0.65
-ARG GS_VERSION=2.18.6
-ARG GS_VERSION_MAJOR=2.18
-ARG GS_DATA_PATH=./geoserver_data
-ARG ADDITIONAL_LIBS_PATH=./additional_libs
-ARG ADDITIONAL_FONTS_PATH=./additional_fonts
+ARG GS_VERSION=2.21.1
+ARG GS_DATA_PATH=./geoserver_data/
+ARG ADDITIONAL_LIBS_PATH=./additional_libs/
+ARG ADDITIONAL_FONTS_PATH=./additional_fonts/
 ARG CORS_ENABLED=false
 ARG CORS_ALLOWED_ORIGINS=*
 ARG CORS_ALLOWED_METHODS=GET,POST,PUT,DELETE,HEAD,OPTIONS
 ARG CORS_ALLOWED_HEADERS=*
-ARG STABLE_PLUGIN_URL=https://sourceforge.net/projects/geoserver/files/GeoServer/${GS_VERSION}/extensions
+ARG STABLE_PLUGIN_URL=https://downloads.sourceforge.net/project/geoserver/GeoServer/${GS_VERSION}/extensions
 
-# Environment variables in the running container
+# Environment Variables for build
 ENV CATALINA_HOME=/opt/apache-tomcat-${TOMCAT_VERSION}
 ENV GEOSERVER_VERSION=$GS_VERSION
 ENV GEOSERVER_DATA_DIR=/mnt/geoserver/data
 ENV GEOSERVER_REQUIRE_FILE=$GEOSERVER_DATA_DIR/global.xml
-ENV GEOSERVER_LIB_DIR=$CATALINA_HOME/webapps/geoserver/WEB-INF/lib
+ENV GEOSERVER_LIB_DIR=$CATALINA_HOME/webapps/geoserver/WEB-INF/lib/
+ENV GEOSERVER_HOME=/geoserver-${GS_VERSION}
+ENV GEOSERVER_VERSION_MM=2.21
 ENV EXTRA_JAVA_OPTS="-Xms256m -Xmx1g"
 ENV CORS_ENABLED=$CORS_ENABLED
 ENV CORS_ALLOWED_ORIGINS=$CORS_ALLOWED_ORIGINS
@@ -35,30 +32,26 @@ ENV DEBIAN_FRONTEND=noninteractive
 ENV INSTALL_EXTENSIONS=false
 ENV STABLE_EXTENSIONS=''
 ENV STABLE_PLUGIN_URL=$STABLE_PLUGIN_URL
-ENV ADDITIONAL_LIBS_DIR=/opt/additional_libs
-ENV ADDITIONAL_FONTS_DIR=/opt/additional_fonts
-ENV SPECIAL_DATA_DIR=/opt/additional_data
-
-# Extra MIT Libraries ENV
-ENV JAVA_OPTS="-Ds3.properties.location=${GEOSERVER_DATA_DIR}/s3.properties"
-ENV GEOTIFF_SOURCE=$ADDITIONAL_LIBS_PATH/geoserver-${GS_VERSION_MAJOR}-SNAPSHOT-s3-geotiff-plugin
+ENV ADDITIONAL_LIBS_DIR=/opt/additional_libs/
+ENV ADDITIONAL_FONTS_DIR=/opt/additional_fonts/
 
 # see https://docs.geoserver.org/stable/en/user/production/container.html
-ENV CATALINA_OPTS="${EXTRA_JAVA_OPTS} \
-    ${JAVA_OPTS} \
+ENV CATALINA_OPTS="\$EXTRA_JAVA_OPTS \
     -Djava.awt.headless=true -server \
     -Dfile.encoding=UTF-8 \
     -Djavax.servlet.request.encoding=UTF-8 \
     -Djavax.servlet.response.encoding=UTF-8 \
     -D-XX:SoftRefLRUPolicyMSPerMB=36000 \
-    -Xbootclasspath/a:${CATALINA_HOME}/lib/marlin.jar \
+    -Xbootclasspath/a:$CATALINA_HOME/lib/marlin.jar \
     -Dsun.java2d.renderer=org.marlin.pisces.PiscesRenderingEngine \
     -Dorg.geotools.coverage.jaiext.enabled=true"
 
 # init
+RUN mkdir -p ${GEOSERVER_HOME}
+RUN mkdir -p ${GEOSERVER_DATA_DIR}
 RUN apt update && \
     apt -y upgrade && \
-    apt install -y --no-install-recommends openssl unzip gdal-bin wget curl openjdk-11-jdk gettext && \
+    apt install -y --no-install-recommends openssl unzip gdal-bin wget curl openjdk-11-jdk && \
     apt clean && \
     rm -rf /var/cache/apt/* && \
     rm -rf /var/lib/apt/lists/*
@@ -82,11 +75,9 @@ RUN wget -q -O /tmp/geoserver.zip https://downloads.sourceforge.net/project/geos
     mv $CATALINA_HOME/webapps/geoserver/WEB-INF/lib/marlin-0.9.3.jar $CATALINA_HOME/lib/marlin.jar && \
     mkdir -p $GEOSERVER_DATA_DIR
 
-
-# MIT Libraries specific fixes
-COPY $GEOTIFF_SOURCE/*.jar ${ADDITIONAL_LIBS_DIR}/
-COPY $ADDITIONAL_FONTS_PATH ${ADDITIONAL_FONTS_DIR}/
-COPY $GS_DATA_PATH/ ${SPECIAL_DATA_DIR}/
+COPY data ${GEOSERVER_HOME}/data_dir/
+COPY $ADDITIONAL_LIBS_PATH $GEOSERVER_LIB_DIR
+COPY $ADDITIONAL_FONTS_PATH /usr/share/fonts/truetype/
 
 # cleanup
 RUN apt purge -y && \
@@ -97,8 +88,7 @@ RUN apt purge -y && \
 COPY *.sh /opt/
 RUN chmod +x /opt/*.sh
 
+EXPOSE 8080
 ENTRYPOINT /opt/startup.sh
 
 WORKDIR /opt
-
-EXPOSE 8080

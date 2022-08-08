@@ -3,6 +3,12 @@
 
 This container is used as the GeoServer instance for [GeoWeb](https://github.com/MITLibraries/geoweb). It adds support for the S3 GeoTiff community plugin.
 
+* [GeoTIFF download for 2.21.1](https://build.geoserver.org/geoserver/2.21.x/community-latest/geoserver-2.21-SNAPSHOT-s3-geotiff-plugin.zip)
+
+## Background information
+
+This container work was started by Mike Graves. It was picked up in 2022 by Christopher and is now based on the official docker container at [goserver/docker][https://github.com/geoserver/docker]. However, that code is still a work in progress and has a number of annoying typos. So, for now, we are copy/pasting some contents from there and tweaking locally until it stabilizes a little.
+
 ## Running the Container
 
 Start the container with:
