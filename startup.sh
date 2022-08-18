@@ -2,7 +2,6 @@
 echo "Welcome to GeoServer $GEOSERVER_VERSION"
 
 
-
 ## install release data directory if needed before starting tomcat
 if [ ! -f "$GEOSERVER_REQUIRE_FILE" ]; then
     echo "Initialize $GEOSERVER_DATA_DIR from data directory included in geoserver.war"
@@ -10,7 +9,8 @@ if [ ! -f "$GEOSERVER_REQUIRE_FILE" ]; then
 fi
 
 ## Update GeoServer data directory
-cp -r $SPECIAL_DATA_DIR/* $GEOSERVER_DATA_DIR
+echo "Configure $GEOSERVER_DATA_DIR with custom GeoWeb configuration"
+cp -r $ADDITIONAL_DATA_DIR/* $GEOSERVER_DATA_DIR
 /usr/bin/chmod 0640 $GEOSERVER_DATA_DIR/security/usergroup/default/*.xml
 rm -rf $GEOSERVER_DATA_DIR/demo/* && \
   rm -rf $GEOSERVER_DATA_DIR/workspaces/* && \

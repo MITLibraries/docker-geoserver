@@ -2,8 +2,8 @@ FROM ubuntu:22.04
 
 # Based on github.com/geoserver/docker, but for now, we cannot use that image
 # because
-# 1. there are too many typos in the ARG and ENV statements (related to trialing slashes)
-# 2. there is an issue with the S3 GeoTIFF module in GeoServer > 2.18
+#  1. there are too many typos in the ARG and ENV statements (related to trialing slashes)
+#  2. there is an issue with the S3 GeoTIFF module in GeoServer > 2.18
 # When those issues are resolved, we can replace the first line above with the line below
 # FROM docker.osgeo.org/geoserver:2.21.1
 
@@ -23,7 +23,7 @@ ARG STABLE_PLUGIN_URL=https://sourceforge.net/projects/geoserver/files/GeoServer
 # Environment variables in the running container
 ENV CATALINA_HOME=/opt/apache-tomcat-${TOMCAT_VERSION}
 ENV GEOSERVER_VERSION=$GS_VERSION
-ENV GEOSERVER_DATA_DIR=/mnt/geoserver/data
+ENV GEOSERVER_DATA_DIR=/opt/geoserver_data
 ENV GEOSERVER_REQUIRE_FILE=$GEOSERVER_DATA_DIR/global.xml
 ENV GEOSERVER_LIB_DIR=$CATALINA_HOME/webapps/geoserver/WEB-INF/lib
 ENV EXTRA_JAVA_OPTS="-Xms256m -Xmx1g"
@@ -37,7 +37,7 @@ ENV STABLE_EXTENSIONS=''
 ENV STABLE_PLUGIN_URL=$STABLE_PLUGIN_URL
 ENV ADDITIONAL_LIBS_DIR=/opt/additional_libs
 ENV ADDITIONAL_FONTS_DIR=/opt/additional_fonts
-ENV SPECIAL_DATA_DIR=/opt/additional_data
+ENV ADDITIONAL_DATA_DIR=/opt/additional_data
 
 # Extra MIT Libraries ENV
 ENV JAVA_OPTS="-Ds3.properties.location=${GEOSERVER_DATA_DIR}/s3.properties"
@@ -86,7 +86,7 @@ RUN wget -q -O /tmp/geoserver.zip https://downloads.sourceforge.net/project/geos
 # MIT Libraries specific fixes
 COPY $GEOTIFF_SOURCE/*.jar ${ADDITIONAL_LIBS_DIR}/
 COPY $ADDITIONAL_FONTS_PATH ${ADDITIONAL_FONTS_DIR}/
-COPY $GS_DATA_PATH/ ${SPECIAL_DATA_DIR}/
+COPY $GS_DATA_PATH ${ADDITIONAL_DATA_DIR}/
 
 # cleanup
 RUN apt purge -y && \
@@ -94,8 +94,7 @@ RUN apt purge -y && \
     rm -rf /tmp/*
 
 # copy scripts
-COPY *.sh /opt/
-RUN chmod +x /opt/*.sh
+COPY --chmod=0755 *.sh /opt/
 
 ENTRYPOINT /opt/startup.sh
 
