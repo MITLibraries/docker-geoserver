@@ -1,6 +1,6 @@
-#!/bin/sh
+#!/bin/bash
 echo "Welcome to GeoServer $GEOSERVER_VERSION"
-
+set -m
 
 ## install release data directory if needed before starting tomcat
 if [ ! -f "$GEOSERVER_REQUIRE_FILE" ]; then
@@ -9,16 +9,20 @@ if [ ! -f "$GEOSERVER_REQUIRE_FILE" ]; then
 fi
 
 ## Update GeoServer data directory
-echo "Configure $GEOSERVER_DATA_DIR with custom GeoWeb configuration"
-cp -r $ADDITIONAL_DATA_DIR/* $GEOSERVER_DATA_DIR
-/usr/bin/chmod 0640 $GEOSERVER_DATA_DIR/security/usergroup/default/*.xml
-rm -rf $GEOSERVER_DATA_DIR/demo/* && \
-  rm -rf $GEOSERVER_DATA_DIR/workspaces/* && \
-  rm -rf $GEOSERVER_DATA_DIR/www/* && \
-  rm -rf $GEOSERVER_DATA_DIR/coverages/* && \
-  rm -rf $GEOSERVER_DATA_DIR/data/* && \
-  rm -rf $GEOSERVER_DATA_DIR/layergroups/* && \
-  rm -rf $GEOSERVER_DATA_DIR/gwx-layers/*
+if [ ! -f "$GEOSERVER_DATA_DIR/s3.properties" ]; then
+  echo "Initialize $GEOSERVER_DATA_DIR with custom GeoWeb configuration"
+  cp -r $ADDITIONAL_DATA_DIR/* $GEOSERVER_DATA_DIR
+  /usr/bin/chmod 0640 $GEOSERVER_DATA_DIR/security/usergroup/default/*.xml
+  rm -rf $GEOSERVER_DATA_DIR/demo/* && \
+    rm -rf $GEOSERVER_DATA_DIR/workspaces/* && \
+    rm -rf $GEOSERVER_DATA_DIR/www/* && \
+    rm -rf $GEOSERVER_DATA_DIR/coverages/* && \
+    rm -rf $GEOSERVER_DATA_DIR/data/* && \
+    rm -rf $GEOSERVER_DATA_DIR/layergroups/* && \
+    rm -rf $GEOSERVER_DATA_DIR/gwx-layers/*
+else
+  echo "$GEOSERVER_DATA_DIR already populated"
+fi
 
 ## install GeoServer extensions before starting the tomcat
 /opt/install-extensions.sh
@@ -45,6 +49,15 @@ if [ "${CORS_ENABLED}" = "true" ]; then
   if ! grep -q DockerGeoServerCorsFilter "$CATALINA_HOME/webapps/geoserver/WEB-INF/web.xml"; then
     echo "Enable CORS for $CATALINA_HOME/webapps/geoserver/WEB-INF/web.xml"
     sed -i "\:</web-app>:i\\
+    <context-param>
+        <param-name>GEOSERVER_CSRF_WHITELIST</param-name>
+        <param-value>mitlibrary.net</param-value>
+    </context-param>
+        <context-param>
+      <param-name>PROXY_BASE_URL</param-name>
+      <param-value>http://gis-geoserver-dev.dev1.mitlibrary.net:8080/geoserver</param-value>
+    </context-param>
+
     <filter>\n\
       <filter-name>DockerGeoServerCorsFilter</filter-name>\n\
       <filter-class>org.apache.catalina.filters.CorsFilter</filter-class>\n\
@@ -68,5 +81,7 @@ if [ "${CORS_ENABLED}" = "true" ]; then
   fi
 fi
 
-# start the tomcat
+# start tomcat and set admin password
 $CATALINA_HOME/bin/catalina.sh run & /opt/geo-password-config.sh
+
+fg %1
