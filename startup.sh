@@ -69,4 +69,4 @@ if [ "${CORS_ENABLED}" = "true" ]; then
 fi
 
 # start the tomcat
-$CATALINA_HOME/bin/catalina.sh run
+$CATALINA_HOME/bin/catalina.sh run & /opt/geo-password-config.sh
